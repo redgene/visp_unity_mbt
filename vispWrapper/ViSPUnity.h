@@ -39,5 +39,5 @@ using namespace std;
 extern "C" {
 	TESTDLL_API void createCaoFile(double cubeEdgeSize);
 	TESTDLL_API void AprilTagMBT(unsigned char* const bitmap, int height, int width, double *pointx, double *pointy);
-	TESTDLL_API void InitMBT();
+	TESTDLL_API void InitMBT(double cam_px, double cam_py, double cam_u0, double cam_v0);
 }

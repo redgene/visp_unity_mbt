@@ -16,7 +16,7 @@ public class Script : MonoBehaviour
     public static extern void createCaoFile(double cubeEdgeSize);
 
     [DllImport("ViSPUnity", CallingConvention = CallingConvention.Cdecl, EntryPoint = "InitMBT")]
-    public static extern void InitMBT();
+    public static extern void InitMBT(double cam_px, double cam_py, double cam_u0, double cam_v0);
 
     [DllImport("ViSPUnity", CallingConvention = CallingConvention.Cdecl, EntryPoint = "AprilTagMBT")]
     public static extern void AprilTagMBT(byte[] bitmap, int height, int width, double[] pointx, double[] pointy);
@@ -28,6 +28,12 @@ public class Script : MonoBehaviour
     [Header("Enter your Camera Resolution here")]
     public int X = 640;   // for example 640
     public int Y = 480;   // for example 480
+
+    [Header("Enter your Camera Parameters here")]
+    public double cam_px = 1131.561907;   
+    public double cam_py = 1085.157822;
+    public double cam_u0 = 588.2376812;
+    public double cam_v0 = 191.1328903;
 
     double[] pointx = new double[24];
     double[] pointy = new double[24];
@@ -43,7 +49,9 @@ public class Script : MonoBehaviour
 
         wct.Play(); //Start capturing image using webcam  
         createCaoFile(0.125);
-        InitMBT();
+
+        //Change camera parameters in the inspector window
+        InitMBT(1131.561907, 1085.157822, 588.2376812, 191.1328903);
         //Debug.Log(Application.persistentDataPath);
 
     }

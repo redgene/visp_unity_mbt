@@ -48,8 +48,8 @@ extern "C" {
 	}
 
 
-	void InitMBT() {
-		cam.initPersProjWithoutDistortion(1131.561907, 1085.157822, 588.2376812, 191.1328903);
+	void InitMBT(double cam_px, double cam_py, double cam_u0, double cam_v0) {
+		cam.initPersProjWithoutDistortion(cam_px, cam_px, cam_u0, cam_v0);
 
 		// Initialize AprilTag detector
 		//detector.set (opt_tag_family);
