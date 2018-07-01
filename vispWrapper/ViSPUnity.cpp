@@ -48,7 +48,7 @@ extern "C" {
 	}
 
 
-	void InitMBT(double cam_px, double cam_py, double cam_u0, double cam_v0) {
+	void InitMBT(double cam_px, double cam_py, double cam_u0, double cam_v0, int t) {
 		cam.initPersProjWithoutDistortion(cam_px, cam_py, cam_u0, cam_v0);
 
 		// Initialize AprilTag detector
@@ -57,7 +57,12 @@ extern "C" {
 		detector.setAprilTagNbThreads(opt_nthreads);
 
 		// Prepare MBT
-		tracker.setTrackerType(vpMbGenericTracker::EDGE_TRACKER);
+		if(t==0)
+			tracker.setTrackerType(vpMbGenericTracker::EDGE_TRACKER);
+
+		if (t == 1)
+			tracker.setTrackerType(vpMbGenericTracker::EDGE_TRACKER | vpMbGenericTracker::KLT_TRACKER);
+
 		tracker.getCameraParameters(cam);
 		/*bool displayFullModel = false;*/
 
@@ -72,6 +77,21 @@ extern "C" {
 		me.setSampleStep(4);
 		tracker.setMovingEdge(me);
 
+		if (t == 1) {
+			//textures
+			vpKltOpencv klt_settings;
+			if (t == 1) {
+				klt_settings.setMaxFeatures(300);
+				klt_settings.setWindowSize(5);
+				klt_settings.setQuality(0.015);
+				klt_settings.setMinDistance(8);
+				klt_settings.setHarrisFreeParameter(0.01);
+				klt_settings.setBlockSize(3);
+				klt_settings.setPyramidLevels(3);
+				tracker.setKltOpencv(klt_settings);
+				tracker.setKltMaskBorder(5);
+			}
+		}
 		// camera calibration params
 		tracker.setCameraParameters(cam);
 
@@ -84,7 +104,7 @@ extern "C" {
 		state = state_detection;
 	}
 
-	void AprilTagMBT(unsigned char* const bitmap, int height, int width, double* pointx, double* pointy) {
+	void AprilTagMBT(unsigned char* const bitmap, int height, int width, double* pointx, double* pointy, double* kltX, double* kltY, int* kltNumber, int t) {
 
 		//The following loop flips the bitmap
 		for (int r = 0; r < height; r++) {
@@ -132,6 +152,21 @@ extern "C" {
 					pointx[i] = IP2.get_u();
 					pointy[i] = IP2.get_v();
 					i++;
+				}
+
+				// GETTING THE KLT POINTS/FEATURES
+				//  getkltimagepoints: Get the current list of KLT points for the reference camera.
+				//	This function convert and copy the OpenCV KLT points into vpImagePoints.
+				
+				if (t == 1) {
+					std::vector<vpImagePoint> kltPoints = tracker.getKltImagePoints();
+					for (int i = 0; i < kltPoints.size(); i++) {
+						kltX[i] = kltPoints[i].get_u();
+						kltY[i] = kltPoints[i].get_v();
+					}
+
+					//kltNumber = kltPoints.size();
+					*kltNumber = tracker.getKltNbPoints();
 				}
 
 				tracker.getPose(cMo);
