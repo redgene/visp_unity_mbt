@@ -23,7 +23,6 @@ extern "C" {
 	int opt_device = 0;
 	vpDetectorAprilTag::vpAprilTagFamily opt_tag_family = vpDetectorAprilTag::TAG_36h11;
 
-
 	double opt_tag_size = 0.08;
 	float opt_quad_decimate = 1.0;
 	int opt_nthreads = 1;
@@ -57,7 +56,7 @@ extern "C" {
 		detector.setAprilTagNbThreads(opt_nthreads);
 
 		// Prepare MBT
-		if(t==0)
+		if (t == 0)
 			tracker.setTrackerType(vpMbGenericTracker::EDGE_TRACKER);
 
 		if (t == 1)
@@ -104,7 +103,7 @@ extern "C" {
 		state = state_detection;
 	}
 
-	void AprilTagMBT(unsigned char* const bitmap, int height, int width, double* pointx, double* pointy, double* kltX, double* kltY, int* kltNumber, int t) {
+	void AprilTagMBT(unsigned char* const bitmap, int height, int width, double* pointx, double* pointy, double* kltX, double* kltY, int* kltNumber, int t, int e) {
 
 		//The following loop flips the bitmap
 		for (int r = 0; r < height; r++) {
@@ -137,7 +136,15 @@ extern "C" {
 				int i = 0;
 
 				for (std::list<vpMbtDistanceLine *>::const_iterator it = edges.begin(); it != edges.end(); ++it) {
-					vpPoint *P1 = (*it)->p1; 
+
+					// From the display() available here:
+					// http://visp-doc.inria.fr/doxygen/visp-daily/vpMbtDistanceLine_8cpp_source.html
+					
+					if (e == 0) {
+						if (!(*it)->isvisible)
+							continue;
+					}
+					vpPoint *P1 = (*it)->p1;
 					vpPoint *P2 = (*it)->p2;
 					P1->changeFrame(cMo);
 					P2->changeFrame(cMo);
@@ -157,7 +164,7 @@ extern "C" {
 				// GETTING THE KLT POINTS/FEATURES
 				//  getkltimagepoints: Get the current list of KLT points for the reference camera.
 				//	This function convert and copy the OpenCV KLT points into vpImagePoints.
-				
+
 				if (t == 1) {
 					std::vector<vpImagePoint> kltPoints = tracker.getKltImagePoints();
 					for (int i = 0; i < kltPoints.size(); i++) {

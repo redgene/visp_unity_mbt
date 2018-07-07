@@ -16,7 +16,7 @@ public class Script : MonoBehaviour
     public static extern void InitMBT(double cam_px, double cam_py, double cam_u0, double cam_v0, int t);
 
     [DllImport("ViSPUnity", CallingConvention = CallingConvention.Cdecl, EntryPoint = "AprilTagMBT")]
-    public static extern void AprilTagMBT(byte[] bitmap, int height, int width, double[] pointx, double[] pointy, double[] kltX, double[] kltY, int[] kltNumber, int t);
+    public static extern void AprilTagMBT(byte[] bitmap, int height, int width, double[] pointx, double[] pointy, double[] kltX, double[] kltY, int[] kltNumber, int t, int e);
     
     WebCamTexture wct;
     Renderer rend;
@@ -43,10 +43,18 @@ public class Script : MonoBehaviour
         Edge_Tracking,
         Edge_Tracking_with_KLT
     };
+    public enum edges
+    {
+        Visible_Edge_tracking_only,
+        All_Edges_tracking
+    };
 
-    [Header("Tracking Method")]
-    public Script.tracking trackingMethod = tracking.Edge_Tracking;
+    [Header("Tracking Method Selection")]
+    public Script.tracking trackingMethod = tracking.Edge_Tracking;          // selected by default
+    public Script.edges edgesVisibility = edges.Visible_Edge_tracking_only; // selected by default
+
     int tr = 0;
+    int e = 0;
 
     void Start()
     {
@@ -63,10 +71,14 @@ public class Script : MonoBehaviour
         else
             tr = 0;
 
+        if (edgesVisibility == edges.All_Edges_tracking)
+            e = 1;
+        else
+            e = 0;
+
         //Change camera parameters in the inspector window
         InitMBT(1131.561907, 1085.157822, 588.2376812, 191.1328903, tr);
         //Debug.Log(Application.persistentDataPath);
-
     }
 
     double x1,x2;
@@ -74,7 +86,7 @@ public class Script : MonoBehaviour
 
     void Update()
     {
-        AprilTagMBT(Color32ArrayToByteArray(wct.GetPixels32()), wct.height, wct.width, pointx, pointy, kltX, kltY, kltNumber,tr);
+        AprilTagMBT(Color32ArrayToByteArray(wct.GetPixels32()), wct.height, wct.width, pointx, pointy, kltX, kltY, kltNumber,tr, e);
         GameObject[] line = GameObject.FindGameObjectsWithTag("Line");
 
         //Loop for all 8 points (each repeated 3 times) and draw lines:
@@ -95,8 +107,12 @@ public class Script : MonoBehaviour
         }
 
         // Testing KLT in Unity:
-        Debug.Log("Num of KLT Feature Points:" + kltNumber[0]);
+        if(tr==1)
+            Debug.Log("Num of KLT Feature Points:" + kltNumber[0]);
         
+        if(tr==0)
+            Debug.Log("Edge Tracking");
+
         //for (int i = 0; i < kltNumber[0]; i++) {
         //    GameObject s = GameObject.CreatePrimitive(PrimitiveType.Sphere);
         //    s.tag = "kltPoint";
