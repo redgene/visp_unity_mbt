@@ -1,7 +1,4 @@
 #include "ViSPUnity.h"
-#include <visp3/core/vpArray2D.h>
-#include <visp3/core/vpRect.h>
-#include <visp3/mbt/vpMbGenericTracker.h>
 
 extern "C" {
 
